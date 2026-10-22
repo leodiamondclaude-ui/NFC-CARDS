@@ -1,26 +1,189 @@
 @import "tailwindcss";
 
+/*
+ * Design tokens. Change the brand here: the accent drives buttons, focus
+ * rings and highlights across the site.
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --paper: #f6f5f1;
+  --paper-2: #efede7;
+  --card: #ffffff;
+  --ink: #0e0e10;
+  --ink-2: #3a3a3f;
+  --muted: #6b6b72;
+  --line: #e2e0d9;
+  --line-strong: #cfccc3;
+  --night: #0c0c0e;
+  --night-2: #17171a;
+  --accent: #ff5714;
+  --accent-ink: #1a0800;
+  --accent-soft: #ffe6da;
+  --success: #1f7a4d;
+  --danger: #b42318;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-paper: var(--paper);
+  --color-paper-2: var(--paper-2);
+  --color-card: var(--card);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-night: var(--night);
+  --color-night-2: var(--night-2);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-soft: var(--accent-soft);
+  --color-success: var(--success);
+  --color-danger: var(--danger);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --radius-card: 1.25rem;
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  font-feature-settings: "ss01", "cv11";
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+@layer components {
+  .container-page {
+    width: 100%;
+    max-width: 76rem;
+    margin-inline: auto;
+    padding-inline: 1.25rem;
+  }
+  @media (min-width: 768px) {
+    .container-page {
+      padding-inline: 2rem;
+    }
+  }
+
+  .eyebrow {
+    font-family: var(--font-geist-mono), ui-monospace, monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .display {
+    font-weight: 600;
+    letter-spacing: -0.035em;
+    line-height: 1.02;
+  }
+
+  .field {
+    width: 100%;
+    border-radius: 0.75rem;
+    border: 1px solid var(--line-strong);
+    background: var(--card);
+    padding: 0.7rem 0.9rem;
+    font-size: 0.95rem;
+    color: var(--ink);
+    transition: border-color 150ms, box-shadow 150ms;
+  }
+  .field:focus {
+    outline: none;
+    border-color: var(--ink);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 30%, transparent);
+  }
+  .field[aria-invalid="true"] {
+    border-color: var(--danger);
+  }
+
+  .prose-legal h2 {
+    margin-top: 2.25rem;
+    margin-bottom: 0.75rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .prose-legal p,
+  .prose-legal li {
+    color: var(--ink-2);
+    line-height: 1.7;
+  }
+  .prose-legal p + p {
+    margin-top: 0.9rem;
+  }
+  .prose-legal ul {
+    list-style: disc;
+    padding-left: 1.25rem;
+    margin-top: 0.75rem;
+    display: grid;
+    gap: 0.4rem;
+  }
+}
+
+/* Subtle entrance animation, disabled for reduced-motion users. */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(var(--r, 0deg));
+  }
+  50% {
+    transform: translateY(-10px) rotate(var(--r, 0deg));
+  }
+}
+@keyframes ripple {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(1.9);
+    opacity: 0;
+  }
+}
+.animate-rise {
+  animation: rise 700ms var(--ease-out-soft) both;
+}
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+.animate-ripple {
+  animation: ripple 2.4s ease-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
