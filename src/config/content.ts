@@ -19,7 +19,7 @@ export const faqs: Faq[] = [
   },
   {
     q: "Do I need an app to use an NFC card?",
-    a: "No. Most NFC-enabled phones open the link without an app. The person you share with doesn't need anything installed. Setup steps on your side depend on the card and the features it supports.",
+    a: "No. Most NFC-enabled phones open the link without an app. The person you share with doesn't need anything installed. We set up your card before it ships, so there's nothing to install on your side either.",
   },
   {
     q: "Does the card work with every smartphone?",

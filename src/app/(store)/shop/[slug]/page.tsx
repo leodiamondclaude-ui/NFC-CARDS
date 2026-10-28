@@ -127,8 +127,8 @@ async function ProductContent({ params }: { params: PageProps<"/shop/[slug]">["p
             <InfoRow icon={TruckIcon} title={`Estimated delivery: ${deliveryEstimate("standard", custom)}`}>
               Standard shipping is {formatMoney(standard.price)}, free on orders over {formatMoney(standard.freeOver!)}. Express is available at checkout.
             </InfoRow>
-            <InfoRow icon={ShieldIcon} title="How setup works">
-              Setup depends on the product. The web address and details you enter are saved with your order.
+            <InfoRow icon={ShieldIcon} title="Set up for you">
+              We set up your card to open the web address you give us before it ships.
             </InfoRow>
             <InfoRow icon={RepeatIcon} title="Update what people see">
               Point your card to a page you can edit and you can change your details any time.

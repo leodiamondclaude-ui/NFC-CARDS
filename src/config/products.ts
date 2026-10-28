@@ -75,7 +75,7 @@ export const starterProducts: Omit<Product, "updatedAt">[] = [
     category: "cards",
     shortDescription: "A clean, professional NFC card for everyday networking.",
     description:
-      "A clean, professional NFC card for everyday networking. Tap it to a compatible phone to open your website or digital profile. Add the web address it should open when you order.",
+      "A clean, professional NFC card for everyday networking. Tap it to a compatible phone to open your website or digital profile. Add the web address it should open when you order, and we set up the card before it ships.",
     price: 1999,
     startingAt: false,
     unitsPerPack: 1,

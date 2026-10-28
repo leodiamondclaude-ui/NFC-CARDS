@@ -7,7 +7,7 @@ const steps = [
   {
     n: "02",
     title: "Set Up Your Profile",
-    body: "Tell us the web address your card should open, such as your website or a digital profile. Setup steps depend on the card you choose, and each product page explains what's included.",
+    body: "Tell us the web address your card should open, such as your website or a digital profile. We set up your card before it ships.",
   },
   {
     n: "03",

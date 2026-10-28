@@ -26,7 +26,7 @@ export default function HowItWorksPage() {
         <Steps />
         <p className="mt-6 flex max-w-3xl gap-2.5 text-sm leading-relaxed text-muted">
           <InfoIcon size={18} className="mt-0.5 shrink-0" />
-          Setup depends on the product you choose. Each product page lists what&apos;s included and what we need from you.
+          We set up every card before it ships. You just tell us the web address it should open when you order.
         </p>
       </section>
 
@@ -120,7 +120,7 @@ export default function HowItWorksPage() {
         <div className="grid gap-8 rounded-[1.75rem] bg-paper-2 p-8 shadow-[0_0_0_1px_var(--line)] md:grid-cols-3 md:p-12">
           {[
             ["No battery", "Cards are passive. The phone's NFC field powers the chip for the moment it's read, so there's nothing to charge or replace."],
-            ["Setup", "How your card is set up depends on the product. Each product page explains what's included and what we need from you."],
+            ["Setup", "We set up every card to open the web address you give us, so it's ready to use when it arrives."],
             ["Privacy", "The chip only shares what's written on it, and only when someone deliberately taps it within a few centimeters."],
           ].map(([t, b]) => (
             <div key={t}>
