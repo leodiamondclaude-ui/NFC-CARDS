@@ -8,20 +8,20 @@
  */
 
 export const site = {
-  name: "TAPCARD",
+  name: "Handshake",
   /** Short line used in metadata and the footer. */
   tagline: "Smart NFC business cards for people who make connections.",
   description:
     "Premium NFC business cards. Share your contact information, social profiles and professional identity with a single tap.",
   /** Public base URL. Set NEXT_PUBLIC_SITE_URL in production; the example domain is only a placeholder. */
-  url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://tapcard.example",
+  url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://handshake.example",
   /**
    * Contact details. PLACEHOLDERS: replace with the real inboxes before launch.
    * No address, phone number or legal entity is published until you add one.
    */
   contact: {
-    email: "hello@tapcard.example",
-    salesEmail: "business@tapcard.example",
+    email: "hello@handshake.example",
+    salesEmail: "business@handshake.example",
   },
   /** Legal business name for policy pages. Leave null until confirmed. */
   legalName: null as string | null,

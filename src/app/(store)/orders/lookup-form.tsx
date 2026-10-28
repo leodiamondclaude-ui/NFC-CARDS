@@ -14,7 +14,7 @@ export function LookupForm() {
   return (
     <div className="grid gap-10 lg:grid-cols-[1fr_1.2fr]">
       <form action={action} className="h-fit space-y-5 rounded-[var(--radius-card)] border border-line bg-card p-6 md:p-8">
-        <Field id="o-number" label="Order number" hint="From your confirmation, e.g. TC-1A2B3C4D.">
+        <Field id="o-number" label="Order number" hint="From your confirmation, e.g. HS-1A2B3C4D.">
           <input name="number" required defaultValue={values?.number} className="field uppercase" {...fieldAria("o-number", undefined, "hint")} />
         </Field>
         <Field id="o-email" label="Email used at checkout">

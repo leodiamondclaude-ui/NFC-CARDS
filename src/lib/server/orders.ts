@@ -52,7 +52,7 @@ export type CustomerRow = Row & { email: string; name: string; phone: string | n
 
 /** Unique, human-friendly, non-sequential reference (doesn't reveal order volume). */
 export function newOrderNumber() {
-  return `TC-${randomBytes(4).toString("hex").toUpperCase()}`;
+  return `HS-${randomBytes(4).toString("hex").toUpperCase()}`;
 }
 
 async function upsertCustomer(email: string, name: string, phone: string | null): Promise<CustomerRow> {

@@ -15,7 +15,7 @@ import { env, hasAdmin } from "@/lib/server/env";
  * calls requireAdmin() on the server; nothing relies on hidden UI.
  */
 
-const COOKIE = "tapcard_admin";
+const COOKIE = "handshake_admin";
 const SESSION_HOURS = 8;
 
 function sign(payload: string) {

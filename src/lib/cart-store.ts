@@ -11,7 +11,7 @@ import type { CartLine } from "@/lib/types";
  * configuration only; prices are always looked up from the catalog.
  */
 
-const STORAGE_KEY = "tapcard.cart.v1";
+const STORAGE_KEY = "handshake.cart.v1";
 
 type State = { lines: CartLine[]; discountCode: string | null; lastAdded: { key: string; at: number } | null };
 

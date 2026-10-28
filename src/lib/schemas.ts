@@ -94,6 +94,6 @@ export const contactMessageSchema = z.object({
 export type ContactMessageInput = z.infer<typeof contactMessageSchema>;
 
 export const orderLookupSchema = z.object({
-  number: text(20).regex(/^TC-[A-F0-9]{8}$/i, "Order numbers look like TC-1A2B3C4D."),
+  number: text(20).regex(/^HS-[A-F0-9]{8}$/i, "Order numbers look like HS-1A2B3C4D."),
   email: z.email("Enter the email used at checkout."),
 });

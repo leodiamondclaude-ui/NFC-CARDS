@@ -39,7 +39,7 @@ export function ContactForm() {
           <input type="email" autoComplete="email" className="field" {...fieldAria("c-email", e.email?.message)} {...register("email")} />
         </Field>
       </div>
-      <Field id="c-order" label="Order number" optional error={e.orderNumber?.message} hint="If your message is about an order, e.g. TC-1A2B3C4D.">
+      <Field id="c-order" label="Order number" optional error={e.orderNumber?.message} hint="If your message is about an order, e.g. HS-1A2B3C4D.">
         <input className="field uppercase" {...fieldAria("c-order", e.orderNumber?.message, "hint")} {...register("orderNumber")} />
       </Field>
       <Field id="c-message" label="Message" error={e.message?.message}>

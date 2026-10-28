@@ -35,7 +35,7 @@ export function NfcGlyph({ color, className = "" }: { color: string; className?:
 
 export function BrandMark({ color, className = "" }: { color: string; className?: string }) {
   return (
-    <span className={`font-semibold tracking-[0.18em] ${className}`} style={{ color }}>
+    <span className={`font-semibold uppercase tracking-[0.18em] ${className}`} style={{ color }}>
       {site.name}
     </span>
   );

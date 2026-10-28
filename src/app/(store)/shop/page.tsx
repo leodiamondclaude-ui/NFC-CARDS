@@ -10,7 +10,7 @@ import { InfoIcon } from "@/components/ui/icons";
 
 export const metadata: Metadata = {
   title: "Shop NFC cards",
-  description: "Browse TAPCARD NFC business cards: Essential, Premium, Custom and Business Pack.",
+  description: "Browse Handshake NFC business cards: Essential, Premium, Custom and Business Pack.",
   alternates: { canonical: "/shop" },
 };
 

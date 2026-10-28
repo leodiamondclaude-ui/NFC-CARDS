@@ -33,7 +33,7 @@ export function track(event: MarketingEvent) {
   }
 }
 
-const CONSENT_KEY = "tapcard.consent.v1";
+const CONSENT_KEY = "handshake.consent.v1";
 export type Consent = "granted" | "denied" | null;
 
 export function readConsent(): Consent {

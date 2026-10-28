@@ -1,4 +1,4 @@
--- TAPCARD schema (Supabase / Postgres).
+-- Handshake schema (Supabase / Postgres).
 -- Apply with `supabase db push`, or paste into the Supabase SQL editor.
 --
 -- Access model
@@ -67,7 +67,7 @@ create table if not exists customers (
 
 create table if not exists orders (
   id uuid primary key,
-  number text unique not null check (number ~ '^TC-[A-F0-9]{8}$'),
+  number text unique not null check (number ~ '^HS-[A-F0-9]{8}$'),
   email text not null,
   phone text,
   customer_id uuid references customers(id),

@@ -22,7 +22,7 @@ export default async function Image() {
         }}
       >
         <div style={{ display: "flex", flexDirection: "column", maxWidth: 560 }}>
-          <div style={{ fontSize: 26, letterSpacing: 8, fontWeight: 600 }}>{site.name}</div>
+          <div style={{ fontSize: 26, letterSpacing: 8, fontWeight: 600 }}>{site.name.toUpperCase()}</div>
           <div style={{ fontSize: 68, fontWeight: 600, lineHeight: 1.04, marginTop: 40, letterSpacing: -2 }}>Your First Impression.</div>
           <div style={{ fontSize: 68, fontWeight: 600, lineHeight: 1.04, color: "#7d93ff", letterSpacing: -2 }}>
             One Tap Away.
@@ -43,7 +43,7 @@ export default async function Image() {
           }}
         >
           <div style={{ display: "flex", justifyContent: "space-between", fontSize: 18, letterSpacing: 4 }}>
-            <span>{site.name}</span>
+            <span>{site.name.toUpperCase()}</span>
             <span style={{ width: 18, height: 18, borderRadius: 9, background: "#3355ff" }} />
           </div>
           <div style={{ display: "flex", flexDirection: "column" }}>

@@ -18,9 +18,9 @@ export const env = {
   adminSessionSecret: process.env.ADMIN_SESSION_SECRET,
 };
 
-/** TAPCARD_DEV_MODE=1 allows dev checkout under `next start` locally. It is ignored on Vercel production deployments. */
+/** HANDSHAKE_DEV_MODE=1 allows dev checkout under `next start` locally. It is ignored on Vercel production deployments. */
 export const isProduction = () =>
-  process.env.VERCEL_ENV === "production" || (process.env.NODE_ENV === "production" && process.env.TAPCARD_DEV_MODE !== "1");
+  process.env.VERCEL_ENV === "production" || (process.env.NODE_ENV === "production" && process.env.HANDSHAKE_DEV_MODE !== "1");
 
 export const hasStripe = () => Boolean(env.stripeSecretKey);
 export const hasSupabase = () => Boolean(env.supabaseUrl && env.supabaseServiceRoleKey);

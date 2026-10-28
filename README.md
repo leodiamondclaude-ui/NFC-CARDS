@@ -1,4 +1,4 @@
-# TAPCARD storefront
+# Handshake storefront
 
 An online store for NFC business cards. It's built with Next.js 16 (App Router, Cache Components), React 19, TypeScript, Tailwind CSS 4, React Hook Form and Zod, and Lucide icons. Stripe Checkout handles payments, Supabase handles the database and file storage, and Resend sends email.
 
@@ -28,7 +28,7 @@ npm run dev                    # http://localhost:3000
 | `npm test` | Vitest: pricing and tampering, variants, stock, discounts, order statuses, upload sniffing, admin auth |
 | `npm run admin:hash` | Creates an admin password hash and session secret |
 
-Without Stripe keys, `npm run dev` uses the development checkout. `npm start` treats itself as production and **disables** checkout unless you set `TAPCARD_DEV_MODE=1`. That flag is for your own machine only and is ignored on Vercel production.
+Without Stripe keys, `npm run dev` uses the development checkout. `npm start` treats itself as production and **disables** checkout unless you set `HANDSHAKE_DEV_MODE=1`. That flag is for your own machine only and is ignored on Vercel production.
 
 ## Environment variables
 
@@ -42,7 +42,7 @@ Everything is listed with comments in `.env.example`. Only `NEXT_PUBLIC_*` value
 | `ADMIN_EMAIL`, `ADMIN_PASSWORD_HASH`, `ADMIN_SESSION_SECRET` | Admin dashboard |
 | `RESEND_API_KEY`, `EMAIL_FROM`, `SALES_INBOX` | Order, shipping and quote emails |
 | `NEXT_PUBLIC_GA_ID`, `NEXT_PUBLIC_META_PIXEL_ID` | Optional analytics. They load only after the visitor accepts the cookie banner. |
-| `LOCAL_DATA_DIR`, `TAPCARD_DEV_MODE` | Local development only |
+| `LOCAL_DATA_DIR`, `HANDSHAKE_DEV_MODE` | Local development only |
 
 ## Database setup (Supabase)
 
