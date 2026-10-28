@@ -1,23 +1,21 @@
 import { limits } from "@/config/site";
-import { storeUpload } from "@/lib/server/uploads";
+import { rateLimit, tooManyRequests } from "@/lib/server/rate-limit";
+import { storeCustomerUpload } from "@/lib/server/uploads";
 
-/** Accepts one artwork file and returns an opaque id. No public URL is ever returned. */
+/** Accepts one logo file and returns an opaque id. No public URL is ever returned. */
 export async function POST(request: Request) {
+  const limit = await rateLimit("uploads", 20, 10 * 60_000);
+  if (!limit.ok) return tooManyRequests(limit.retryAfter);
+
   const length = Number(request.headers.get("content-length") ?? 0);
   if (length > limits.upload.maxBytes + 64 * 1024) {
-    return Response.json({ error: "Files must be under 10 MB." }, { status: 413 });
+    return Response.json({ error: `Use a ${limits.upload.label} file.` }, { status: 413 });
   }
-
-  let form: FormData;
-  try {
-    form = await request.formData();
-  } catch {
-    return Response.json({ error: "Invalid upload." }, { status: 400 });
-  }
-  const file = form.get("file");
+  const form = await request.formData().catch(() => null);
+  const file = form?.get("file");
   if (!(file instanceof File)) return Response.json({ error: "No file received." }, { status: 400 });
 
-  const result = await storeUpload(file);
+  const result = await storeCustomerUpload(file);
   if (!result.ok) return Response.json({ error: result.error }, { status: result.status });
   return Response.json({ id: result.id });
 }

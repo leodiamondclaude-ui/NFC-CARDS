@@ -17,7 +17,7 @@ export function PhonePreview({ className = "" }: { className?: string }) {
         <div className="relative h-full w-full overflow-hidden rounded-[12.5cqw] bg-paper">
           <div className="absolute left-1/2 top-[3.5cqw] z-10 h-[7.5cqw] w-[30cqw] -translate-x-1/2 rounded-full bg-night" />
           <div className="h-[26%] bg-[linear-gradient(160deg,#1b1b1e,#0c0c0e)] pt-[14cqw] text-center font-mono text-[3.6cqw] tracking-wide text-paper/55">
-            tapform.example/p/alex
+            tapcard.example/alex
           </div>
           <div className="-mt-[13cqw] px-[6.5cqw]">
             <div className="grid h-[26cqw] w-[26cqw] place-items-center rounded-full border-[1.6cqw] border-paper bg-accent text-[8cqw] font-semibold text-accent-ink">

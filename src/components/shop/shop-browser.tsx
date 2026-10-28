@@ -1,30 +1,26 @@
 "use client";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useMemo, useTransition } from "react";
-import { categories, finishes, type Product } from "@/config/products";
-import { filterProducts, sorts, type Sort } from "@/lib/filter";
+import { useMemo, useState, useTransition } from "react";
+import { categories } from "@/config/products";
 import { ProductCard } from "@/components/shop/product-card";
 import { CloseIcon, SearchIcon } from "@/components/ui/icons";
+import { filterProducts, sorts, type Sort } from "@/lib/filter";
+import type { Product } from "@/lib/types";
 
+/** Search, category filter and sorting, kept in the URL so results can be shared and survive refresh. */
 export function ShopBrowser({ products }: { products: Product[] }) {
   const params = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
   const [pending, startTransition] = useTransition();
 
-  const q = params.get("q") ?? "";
   const category = params.get("category") ?? "";
-  const finish = params.get("finish") ?? "";
   const sortParam = params.get("sort") as Sort | null;
-  const sort: Sort = sorts.some((s) => s.id === sortParam) ? sortParam! : "popular";
+  const sort: Sort = sorts.some((s) => s.id === sortParam) ? sortParam! : "featured";
+  const [q, setQ] = useState(params.get("q") ?? "");
 
-  const results = useMemo(() => filterProducts(products, { q, category, finish, sort }), [products, q, category, finish, sort]);
-
-  const availableFinishes = useMemo(
-    () => Array.from(new Set(products.flatMap((p) => p.finishes))),
-    [products],
-  );
+  const results = useMemo(() => filterProducts(products, { q, category, sort }), [products, q, category, sort]);
 
   function update(key: string, value: string) {
     const next = new URLSearchParams(params.toString());
@@ -34,117 +30,89 @@ export function ShopBrowser({ products }: { products: Product[] }) {
     startTransition(() => router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false }));
   }
 
-  const activeFilters = [category, finish, q].filter(Boolean).length;
+  const active = Boolean(category || q || sort !== "featured");
 
   return (
-    <div className="grid gap-10 lg:grid-cols-[15rem_1fr]">
-      <aside aria-label="Filters" className="space-y-8 lg:sticky lg:top-24 lg:self-start">
-        <div>
-          <label htmlFor="search" className="mb-2 block text-sm font-medium">
-            Search
-          </label>
-          <div className="relative">
+    <div>
+      <div className="flex flex-col gap-4 border-b border-line pb-6 lg:flex-row lg:items-center lg:justify-between">
+        <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1" role="group" aria-label="Category">
+          {[{ id: "", label: "All" }, ...categories].map((c) => {
+            const on = category === c.id;
+            return (
+              <button
+                key={c.id || "all"}
+                type="button"
+                aria-pressed={on}
+                onClick={() => update("category", c.id)}
+                className={`shrink-0 rounded-full px-4 py-2 text-sm transition-colors ${on ? "bg-ink text-paper" : "border border-line bg-card text-ink-2 hover:border-line-strong hover:text-ink"}`}
+              >
+                {c.label}
+              </button>
+            );
+          })}
+        </div>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="relative sm:w-64">
+            <label htmlFor="shop-search" className="sr-only">
+              Search products
+            </label>
             <SearchIcon size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
             <input
-              id="search"
+              id="shop-search"
               type="search"
-              defaultValue={q}
-              placeholder="Metal, black, team…"
-              onChange={(e) => update("q", e.target.value)}
-              className="field pl-9"
+              value={q}
+              placeholder="Search cards"
+              onChange={(e) => {
+                setQ(e.target.value);
+                update("q", e.target.value);
+              }}
+              className="field py-2 pl-9 text-sm"
             />
           </div>
-        </div>
-
-        <fieldset>
-          <legend className="mb-3 text-sm font-medium">Category</legend>
-          <div className="flex flex-wrap gap-2 lg:flex-col lg:items-start">
-            {[{ id: "", label: "All" }, ...categories].map((c) => {
-              const active = category === c.id;
-              return (
-                <button
-                  key={c.id || "all"}
-                  type="button"
-                  aria-pressed={active}
-                  onClick={() => update("category", c.id)}
-                  className={`rounded-full px-3.5 py-1.5 text-sm transition-colors ${
-                    active ? "bg-ink text-paper" : "bg-card text-ink-2 shadow-[0_0_0_1px_var(--line)] hover:text-ink"
-                  }`}
-                >
-                  {c.label}
-                </button>
-              );
-            })}
-          </div>
-        </fieldset>
-
-        <fieldset>
-          <legend className="mb-3 text-sm font-medium">Color and finish</legend>
-          <div className="grid grid-cols-1 gap-1">
-            {availableFinishes.map((id) => {
-              const f = finishes[id];
-              const active = finish === id;
-              return (
-                <button
-                  key={id}
-                  type="button"
-                  aria-pressed={active}
-                  onClick={() => update("finish", active ? "" : id)}
-                  className={`flex items-center gap-3 rounded-xl px-2 py-1.5 text-left text-sm transition-colors ${
-                    active ? "bg-card font-medium shadow-[0_0_0_1px_var(--ink)]" : "text-ink-2 hover:bg-card"
-                  }`}
-                >
-                  <span className="h-5 w-5 rounded-full ring-1 ring-black/10" style={{ background: f.surface }} />
-                  {f.name}
-                </button>
-              );
-            })}
-          </div>
-        </fieldset>
-      </aside>
-
-      <div>
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-          <p className="text-sm text-muted" aria-live="polite">
-            {results.length} {results.length === 1 ? "product" : "products"}
-            {pending && " · updating"}
-          </p>
-          <div className="flex items-center gap-3">
-            {activeFilters > 0 && (
-              <button
-                type="button"
-                onClick={() => startTransition(() => router.replace(pathname, { scroll: false }))}
-                className="inline-flex items-center gap-1 text-sm text-muted hover:text-ink"
-              >
-                <CloseIcon size={14} /> Clear filters
-              </button>
-            )}
-            <label htmlFor="sort" className="sr-only">
-              Sort by
-            </label>
-            <select id="sort" value={sort} onChange={(e) => update("sort", e.target.value === "popular" ? "" : e.target.value)} className="field w-auto py-2 text-sm">
-              {sorts.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.label}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        {results.length ? (
-          <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-            {results.map((p) => (
-              <ProductCard key={p.slug} product={p} />
+          <label htmlFor="shop-sort" className="sr-only">
+            Sort by
+          </label>
+          <select id="shop-sort" value={sort} onChange={(e) => update("sort", e.target.value === "featured" ? "" : e.target.value)} className="field w-auto py-2 text-sm">
+            {sorts.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.label}
+              </option>
             ))}
-          </div>
-        ) : (
-          <div className="rounded-[var(--radius-card)] bg-card p-12 text-center shadow-[0_0_0_1px_var(--line)]">
-            <p className="font-medium">No products match those filters.</p>
-            <p className="mt-1 text-sm text-muted">Try a different search or clear the filters.</p>
-          </div>
+          </select>
+        </div>
+      </div>
+
+      <div className="mb-6 mt-5 flex items-center justify-between text-sm text-muted">
+        <p aria-live="polite">
+          {results.length} {results.length === 1 ? "product" : "products"}
+          {pending && " · updating"}
+        </p>
+        {active && (
+          <button
+            type="button"
+            onClick={() => {
+              setQ("");
+              startTransition(() => router.replace(pathname, { scroll: false }));
+            }}
+            className="inline-flex items-center gap-1 hover:text-ink"
+          >
+            <CloseIcon size={14} /> Clear filters
+          </button>
         )}
       </div>
+
+      {results.length ? (
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {results.map((p, i) => (
+            <ProductCard key={p.id} product={p} priority={i < 2} />
+          ))}
+        </div>
+      ) : (
+        <div className="rounded-[var(--radius-card)] border border-line bg-paper-2 p-12 text-center">
+          <p className="font-medium">No products match your search.</p>
+          <p className="mt-1 text-sm text-muted">Try another word or clear the filters.</p>
+        </div>
+      )}
     </div>
   );
 }

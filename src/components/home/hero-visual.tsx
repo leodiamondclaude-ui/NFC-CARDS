@@ -8,7 +8,7 @@ export function HeroVisual() {
       {/* Soft halo */}
       <div
         aria-hidden="true"
-        className="absolute inset-[8%] rounded-full bg-[radial-gradient(circle_at_50%_50%,rgba(255,87,20,0.16),transparent_62%)]"
+        className="absolute inset-[8%] rounded-full bg-[radial-gradient(circle_at_50%_50%,rgba(51,85,255,0.14),transparent_62%)]"
       />
       <div className="absolute right-[6%] top-[0%] w-[42%] animate-rise [animation-delay:150ms]">
         <PhonePreview />
@@ -21,7 +21,7 @@ export function HeroVisual() {
       </div>
       <div className="absolute bottom-[4%] left-[0%] w-[58%] animate-float [--r:-8deg]">
         <CardArt
-          finish={finishes["matte-black"]}
+          finish={finishes.black}
           view="front"
           text="Alex Rivera"
           subtext="Founder, Rivera Studio"

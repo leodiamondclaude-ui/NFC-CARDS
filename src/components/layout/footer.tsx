@@ -6,28 +6,28 @@ const columns = [
   {
     title: "Shop",
     links: [
-      { href: "/shop", label: "All products" },
-      { href: "/shop/classic", label: "Classic NFC Card" },
-      { href: "/shop/premium", label: "Premium NFC Card" },
-      { href: "/shop/custom", label: "Custom NFC Card" },
-      { href: "/customize", label: "Card customizer" },
-    ],
-  },
-  {
-    title: "Learn",
-    links: [
-      { href: "/how-it-works", label: "How it works" },
-      { href: "/business", label: "Business solutions" },
-      { href: "/faq", label: "FAQ" },
-      { href: "/about", label: "About" },
+      { href: "/shop", label: "All cards" },
+      { href: "/shop/essential-nfc-card", label: "Essential NFC Card" },
+      { href: "/shop/premium-nfc-card", label: "Premium NFC Card" },
+      { href: "/shop/custom-nfc-card", label: "Custom NFC Card" },
+      { href: "/shop/business-pack", label: "Business Pack" },
     ],
   },
   {
     title: "Support",
     links: [
+      { href: "/how-it-works", label: "How it works" },
+      { href: "/faq", label: "FAQ" },
       { href: "/contact", label: "Contact" },
+      { href: "/orders", label: "Track an order" },
+      { href: "/business", label: "For business" },
+    ],
+  },
+  {
+    title: "Policies",
+    links: [
       { href: "/shipping", label: "Shipping policy" },
-      { href: "/returns", label: "Returns" },
+      { href: "/returns", label: "Returns policy" },
       { href: "/privacy", label: "Privacy policy" },
       { href: "/terms", label: "Terms of service" },
     ],
@@ -76,7 +76,7 @@ export function Footer() {
           <p>
             © <CopyrightYear /> {site.name}. All rights reserved.
           </p>
-          <p>NFC compatibility varies by phone model and settings.</p>
+          <p>NFC support varies by phone model and settings.</p>
         </div>
       </div>
     </footer>

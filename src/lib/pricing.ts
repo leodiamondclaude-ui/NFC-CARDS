@@ -1,37 +1,18 @@
 import { discountCodes, limits, shipping, type DiscountCode, type ShippingMethodId } from "@/config/site";
-import { getFinish, getProduct } from "@/lib/catalog";
-import type { Destination } from "@/lib/destinations";
-import type { Product } from "@/config/products";
+import { findProduct, findVariant, variantInStock } from "@/lib/catalog";
+import { normalizeUrl } from "@/lib/destinations";
 import { formatMoney } from "@/lib/money";
+import type { CartLine, Customization, CustomField, Product, Variant } from "@/lib/types";
 
 /**
  * Pricing is a pure function of the cart contents and the catalog, so the
- * browser can show the same numbers the server will charge. The server
- * always recomputes totals itself and ignores any price sent by the client.
+ * browser can preview the same numbers the server will charge. The server
+ * always recomputes totals from its own catalog and ignores client prices.
  */
-
-export type Customization = {
-  /** Printed/engraved name or business name. */
-  text?: string;
-  /** Second line, such as a job title. */
-  subtext?: string;
-  /** Opaque id of a privately stored upload (never a public URL). */
-  uploadId?: string;
-  uploadName?: string;
-};
-
-export type CartLine = {
-  /** Stable key for this exact configuration. */
-  key: string;
-  slug: string;
-  finishId: string;
-  quantity: number;
-  customization?: Customization;
-  destination?: Destination;
-};
 
 export type PricedLine = CartLine & {
   product: Product;
+  variant: Variant;
   unitPrice: number;
   lineTotal: number;
 };
@@ -52,7 +33,7 @@ export type Totals = {
 };
 
 export function lineKey(line: Omit<CartLine, "key" | "quantity">): string {
-  return JSON.stringify([line.slug, line.finishId, line.customization ?? null, line.destination ?? null]);
+  return JSON.stringify([line.slug, line.variantId, line.customization ?? null]);
 }
 
 export function findDiscount(code: string | undefined | null): DiscountCode | null {
@@ -75,39 +56,54 @@ export function computeShipping(discountedSubtotal: number, methodId: ShippingMe
   return method.price;
 }
 
+const fieldOf: Record<keyof Customization, CustomField | null> = {
+  printedName: "printedName",
+  jobTitle: "jobTitle",
+  company: "company",
+  profileUrl: "profileUrl",
+  logoUploadId: "logo",
+  logoName: "logo",
+};
+
 /** Validates a single line against the catalog. Returns an error message or null. */
-export function validateLine(line: CartLine): string | null {
-  const product = getProduct(line.slug);
-  if (!product) return "This product is no longer available.";
-  if (!product.inStock) return `${product.name} is out of stock.`;
-  if (!product.finishes.includes(line.finishId as never) || !getFinish(line.finishId))
-    return `That finish isn't available for ${product.name}.`;
+export function validateLine(line: CartLine, products: Product[]): string | null {
+  const product = findProduct(products, line.slug);
+  if (!product || !product.active) return "This product is no longer available.";
+  const variant = findVariant(product, line.variantId);
+  if (!variant || !variant.available) return `That color of ${product.name} is unavailable.`;
   if (!Number.isInteger(line.quantity) || line.quantity < 1 || line.quantity > limits.maxQuantityPerLine)
     return `Quantity must be between 1 and ${limits.maxQuantityPerLine}.`;
-  const c = line.customization;
-  if (c && !product.customizable && (c.text || c.subtext || c.uploadId))
-    return `${product.name} can't be personalized.`;
-  if (c?.uploadId && !product.acceptsLogo) return `${product.name} doesn't accept logo uploads.`;
-  if (c?.text && c.text.length > 40) return "Card text must be 40 characters or fewer.";
-  if (c?.subtext && c.subtext.length > 40) return "Second line must be 40 characters or fewer.";
+  if (!variantInStock(variant, line.quantity))
+    return variant.inventory
+      ? `Only ${variant.inventory} of ${product.name} (${variant.name}) left.`
+      : `${product.name} (${variant.name}) is out of stock.`;
+  for (const [k, v] of Object.entries(line.customization ?? {}) as [keyof Customization, string | undefined][]) {
+    if (!v) continue;
+    const field = fieldOf[k];
+    if (!field || !product.customFields.includes(field)) return `${product.name} can't be customized that way.`;
+  }
+  const url = line.customization?.profileUrl;
+  if (url && !normalizeUrl(url)) return "The card's web address isn't valid.";
   return null;
 }
 
 export function computeTotals(
   lines: CartLine[],
+  products: Product[],
   options: { shippingMethod?: ShippingMethodId; discountCode?: string | null } = {},
 ): Totals {
   const priced: PricedLine[] = [];
   const issues: LineIssue[] = [];
 
   for (const line of lines.slice(0, limits.maxLines)) {
-    const error = validateLine(line);
+    const error = validateLine(line, products);
     if (error) {
       issues.push({ key: line.key, message: error });
       continue;
     }
-    const product = getProduct(line.slug)!;
-    priced.push({ ...line, product, unitPrice: product.price, lineTotal: product.price * line.quantity });
+    const product = findProduct(products, line.slug)!;
+    const variant = findVariant(product, line.variantId)!;
+    priced.push({ ...line, product, variant, unitPrice: product.price, lineTotal: product.price * line.quantity });
   }
   if (lines.length > limits.maxLines) {
     issues.push({ key: "cart", message: `A cart can hold up to ${limits.maxLines} different items.` });
@@ -135,6 +131,11 @@ export function computeTotals(
     total: subtotal - discount + shippingCost,
     itemCount: priced.reduce((n, l) => n + l.quantity, 0),
   };
+}
+
+export function isCustomLine(line: { product: Product; customization?: Customization }) {
+  const c = line.customization;
+  return Boolean(c?.printedName || c?.jobTitle || c?.company || c?.logoUploadId || line.product.category !== "cards");
 }
 
 /** Human-readable delivery estimate in business days. */

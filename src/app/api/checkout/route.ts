@@ -1,37 +1,32 @@
-import { finishes, type FinishId } from "@/config/products";
 import { shipping, site } from "@/config/site";
-import { computeTotals, deliveryEstimate, type CartLine } from "@/lib/pricing";
+import { computeTotals, deliveryEstimate, isCustomLine } from "@/lib/pricing";
 import { checkoutSchema } from "@/lib/schemas";
-import { env, hasStripe } from "@/lib/server/env";
-import { attachStripeSession, cancelOrder, createOrder } from "@/lib/server/orders";
+import { readCatalog } from "@/lib/server/catalog";
+import { devCheckoutEnabled, env, hasStripe } from "@/lib/server/env";
+import { attachStripeSession, cancelUnpaidOrder, createOrder } from "@/lib/server/orders";
+import { rateLimit, tooManyRequests } from "@/lib/server/rate-limit";
 import { getStripe } from "@/lib/server/stripe";
-import { describeDestination } from "@/lib/destinations";
+import type { CartLine } from "@/lib/types";
 
 /**
- * Creates an order and a Stripe Checkout Session.
+ * Creates an order and (when Stripe is configured) a Stripe Checkout Session.
  *
- * Prices, discounts and shipping are recomputed here from the catalog; any
- * amount sent by the browser is ignored. The order stays `pending_payment`
- * until the Stripe webhook confirms payment.
+ * Prices, availability, discounts and shipping are recomputed here from the
+ * live catalog; anything price-like sent by the browser is ignored. The order
+ * stays "pending_payment" until the Stripe webhook confirms payment.
  */
 export async function POST(request: Request) {
-  let body: unknown;
-  try {
-    body = await request.json();
-  } catch {
-    return Response.json({ error: "Invalid request." }, { status: 400 });
-  }
+  const limit = await rateLimit("checkout", 15, 10 * 60_000);
+  if (!limit.ok) return tooManyRequests(limit.retryAfter);
 
-  const parsed = checkoutSchema.safeParse(body);
+  const parsed = checkoutSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
-    return Response.json(
-      { error: "Please check your details.", fields: parsed.error.flatten().fieldErrors },
-      { status: 400 },
-    );
+    return Response.json({ error: "Please check your details.", fields: parsed.error.flatten().fieldErrors }, { status: 400 });
   }
   const input = parsed.data;
 
-  const totals = computeTotals(input.lines as CartLine[], {
+  const catalog = (await readCatalog()).filter((p) => p.active);
+  const totals = computeTotals(input.lines as CartLine[], catalog, {
     shippingMethod: input.shippingMethod,
     discountCode: input.discountCode,
   });
@@ -41,19 +36,20 @@ export async function POST(request: Request) {
   if (!totals.lines.length) return Response.json({ error: "Your cart is empty." }, { status: 400 });
 
   if (!hasStripe()) {
-    return Response.json(
-      {
-        error:
-          "Payments aren't connected yet. Add STRIPE_SECRET_KEY (test mode) to enable checkout. No order was created and nothing was charged.",
-        setupRequired: true,
-      },
-      { status: 503 },
-    );
+    if (!devCheckoutEnabled()) {
+      return Response.json(
+        { error: "Online payments aren't available yet. No order was created and nothing was charged.", setupRequired: true },
+        { status: 503 },
+      );
+    }
+    // Development mode: save the order unpaid so the flow can be tested. No payment is taken.
+    const order = await createOrder(input, totals, "dev");
+    return Response.json({ url: `/checkout/success?order=${order.id}`, orderNumber: order.number, devMode: true });
   }
 
-  const order = await createOrder(input, totals);
+  const order = await createOrder(input, totals, "stripe");
   const method = shipping.methods.find((m) => m.id === totals.shippingMethod)!;
-  const hasCustom = totals.lines.some((l) => l.customization?.uploadId || l.product.category === "custom" || l.product.category === "teams");
+  const hasCustom = totals.lines.some(isCustomLine);
 
   try {
     const stripe = getStripe();
@@ -68,48 +64,47 @@ export async function POST(request: Request) {
           })
         : null;
 
-    const session = await stripe.checkout.sessions.create({
-      mode: "payment",
-      customer_email: input.email,
-      client_reference_id: order.id,
-      metadata: { order_id: order.id, order_number: order.number },
-      payment_intent_data: { metadata: { order_id: order.id, order_number: order.number } },
-      line_items: totals.lines.map((l) => ({
-        quantity: l.quantity,
-        price_data: {
-          currency: site.currency,
-          unit_amount: l.unitPrice,
-          product_data: {
-            name: l.product.name,
-            description: [
-              finishes[l.finishId as FinishId]?.name,
-              l.customization?.text,
-              l.destination ? `Tap opens: ${describeDestination(l.destination)}` : undefined,
-            ]
-              .filter(Boolean)
-              .join(" · ")
-              .slice(0, 500),
+    const session = await stripe.checkout.sessions.create(
+      {
+        mode: "payment",
+        customer_email: input.contact.email,
+        client_reference_id: order.id,
+        metadata: { order_id: order.id, order_number: order.number },
+        payment_intent_data: { metadata: { order_id: order.id, order_number: order.number } },
+        line_items: totals.lines.map((l) => ({
+          quantity: l.quantity,
+          price_data: {
+            currency: site.currency,
+            unit_amount: l.unitPrice,
+            product_data: {
+              name: `${l.product.name} (${l.variant.name})`,
+              description: [l.customization?.printedName, l.customization?.company].filter(Boolean).join(" · ").slice(0, 300) || undefined,
+              metadata: { sku: l.variant.sku },
+            },
           },
-        },
-      })),
-      discounts: coupon ? [{ coupon: coupon.id }] : undefined,
-      shipping_options: [
-        {
-          shipping_rate_data: {
-            type: "fixed_amount",
-            display_name: `${method.label} (${deliveryEstimate(method.id, hasCustom)})`,
-            fixed_amount: { amount: totals.shipping, currency: site.currency },
+        })),
+        discounts: coupon ? [{ coupon: coupon.id }] : undefined,
+        shipping_options: [
+          {
+            shipping_rate_data: {
+              type: "fixed_amount",
+              display_name: `${method.label} (${deliveryEstimate(method.id, hasCustom)})`,
+              fixed_amount: { amount: totals.shipping, currency: site.currency },
+            },
           },
-        },
-      ],
-      success_url: `${env.siteUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${env.siteUrl}/checkout?cancelled=1`,
-    });
+        ],
+        // Abandoned sessions expire after 1 hour; the webhook then cancels the unpaid order.
+        expires_at: Math.floor(Date.now() / 1000) + 60 * 60,
+        success_url: `${env.siteUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${env.siteUrl}/checkout?canceled=1`,
+      },
+      { idempotencyKey: `checkout-${order.id}` },
+    );
 
     if (session.amount_total !== null && session.amount_total !== totals.total) {
       // Should never happen; refuse rather than charge a different amount.
       await stripe.checkout.sessions.expire(session.id);
-      await cancelOrder(order.id);
+      await cancelUnpaidOrder(order.id, "Stripe total did not match server total");
       return Response.json({ error: "We couldn't confirm your total. Please try again." }, { status: 500 });
     }
 
@@ -117,7 +112,7 @@ export async function POST(request: Request) {
     return Response.json({ url: session.url, orderNumber: order.number });
   } catch (error) {
     console.error("[checkout] Stripe session failed", error);
-    await cancelOrder(order.id);
+    await cancelUnpaidOrder(order.id, "Could not start Stripe Checkout");
     return Response.json({ error: "We couldn't start checkout. You haven't been charged. Please try again." }, { status: 502 });
   }
 }

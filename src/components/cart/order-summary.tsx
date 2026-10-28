@@ -1,40 +1,42 @@
 "use client";
 
-import { finishes, type FinishId } from "@/config/products";
-import { CardArt } from "@/components/card/card-art";
-import { describeDestination, destinationLabel } from "@/lib/destinations";
+import { ProductVisual } from "@/components/card/product-visual";
 import { formatMoney } from "@/lib/money";
 import type { PricedLine, Totals } from "@/lib/pricing";
 
 export function LineThumb({ line }: { line: PricedLine }) {
-  const finish = finishes[line.finishId as FinishId];
+  const c = line.customization;
   return (
-    <div className="grid h-20 w-24 shrink-0 place-items-center rounded-xl bg-paper-2 px-2.5">
-      <CardArt finish={finish} form={line.product.form} text={line.customization?.text} subtext={line.customization?.subtext} shadow={false} />
+    <div className="w-24 shrink-0 overflow-hidden rounded-xl bg-paper-2">
+      <ProductVisual product={line.product} variant={line.variant} text={c?.printedName} subtext={c?.jobTitle} sizes="96px" className="px-[10%]" />
     </div>
   );
 }
 
+/** The chosen color and every customization detail, so customers can check them before paying. */
 export function LineDetails({ line }: { line: PricedLine }) {
-  const finish = finishes[line.finishId as FinishId];
   const c = line.customization;
+  const rows = [
+    ["Color", line.variant.name],
+    ["Name", c?.printedName],
+    ["Title", c?.jobTitle],
+    ["Company", c?.company],
+    ["Profile link", c?.profileUrl],
+    ["Logo", c?.logoName],
+  ].filter((r): r is [string, string] => Boolean(r[1]));
   return (
     <ul className="mt-1 space-y-0.5 text-xs leading-relaxed text-muted">
-      <li>{finish.name}</li>
-      {(c?.text || c?.subtext) && <li>On card: {[c.text, c.subtext].filter(Boolean).join(" · ")}</li>}
-      {c?.uploadName && <li>Artwork: {c.uploadName}</li>}
-      {line.destination ? (
-        <li className="truncate">
-          Tap opens ({destinationLabel(line.destination.type)}): {describeDestination(line.destination)}
+      {rows.map(([k, v]) => (
+        <li key={k} className="truncate">
+          {k}: <span className="text-ink-2">{v}</span>
         </li>
-      ) : line.product.unitsPerPack > 1 ? (
-        <li>Per-card setup after checkout</li>
-      ) : null}
+      ))}
+      {line.product.unitsPerPack > 1 && <li>{line.product.unitsPerPack} cards per pack</li>}
     </ul>
   );
 }
 
-export function TotalsTable({ totals }: { totals: Totals }) {
+export function TotalsTable({ totals, shippingLabel = "Shipping" }: { totals: Totals; shippingLabel?: string }) {
   return (
     <dl className="space-y-2.5 text-sm">
       <div className="flex justify-between">
@@ -48,7 +50,7 @@ export function TotalsTable({ totals }: { totals: Totals }) {
         </div>
       )}
       <div className="flex justify-between">
-        <dt className="text-muted">Shipping</dt>
+        <dt className="text-muted">{shippingLabel}</dt>
         <dd className="tabular-nums">{totals.shipping ? formatMoney(totals.shipping) : "Free"}</dd>
       </div>
       <div className="flex justify-between border-t border-line pt-3 text-base font-semibold">

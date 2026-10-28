@@ -1,21 +1,20 @@
 const steps = [
   {
     n: "01",
-    title: "Choose your card",
-    body: "Pick a material and finish, then add your name or logo. Every card is the standard wallet size.",
+    title: "Choose Your Card",
+    body: "Pick the card that fits you, from the Essential card to a fully custom design or a pack for your team.",
   },
   {
     n: "02",
-    title: "Set up your destination",
-    body: "Tell us what a tap should open: a website, digital business card, social profile, link-in-bio or contact details. We program and test the card before it ships.",
+    title: "Set Up Your Profile",
+    body: "Tell us the web address your card should open, such as your website or a digital profile. Setup steps depend on the card you choose, and each product page explains what's included.",
   },
   {
     n: "03",
-    title: "Tap and share",
-    body: "Hold the card near the top of a compatible phone. The link opens in the browser, with no app needed on their side.",
+    title: "Tap and Share",
+    body: "Hold the card near a compatible phone and your page opens in the browser. Most recent phones support NFC, but not every phone does.",
   },
 ];
-
 export function Steps({ inverse = false }: { inverse?: boolean }) {
   return (
     <ol className="grid gap-4 md:grid-cols-3">

@@ -1,43 +1,46 @@
-import { finishes, products, type Finish, type Product } from "@/config/products";
+import { finishes, type Finish } from "@/config/products";
+import { formatMoney } from "@/lib/money";
+import type { Product, Variant } from "@/lib/types";
 
-/**
- * Catalog access. Reads the static config today; swap these functions for
- * database queries (see supabase/migrations) without touching the UI.
- */
+/** Pure catalog helpers shared by server and client. They take the product list as input. */
 
-export function getAllProducts(): Product[] {
-  return products;
-}
-
-export function getProduct(slug: string): Product | undefined {
+export function findProduct(products: Product[], slug: string): Product | undefined {
   return products.find((p) => p.slug === slug);
 }
 
-export function getFeaturedProducts(): Product[] {
-  return products.filter((p) => p.featured).sort((a, b) => a.popularity - b.popularity);
+export function findVariant(product: Product, variantId: string): Variant | undefined {
+  return product.variants.find((v) => v.id === variantId);
 }
 
-export function getRelatedProducts(slug: string, count = 3): Product[] {
-  const current = getProduct(slug);
+export function finishOf(variant: Variant): Finish {
+  return finishes[variant.finish] ?? finishes.black;
+}
+
+/** A variant can be bought when it's available and (if stock is tracked) in stock. */
+export function variantInStock(variant: Variant, quantity = 1): boolean {
+  return variant.available && (variant.inventory === null || variant.inventory >= quantity);
+}
+
+export function productInStock(product: Product): boolean {
+  return product.active && product.variants.some((v) => variantInStock(v));
+}
+
+export function defaultVariant(product: Product): Variant | undefined {
+  return product.variants.find((v) => variantInStock(v)) ?? product.variants[0];
+}
+
+export function priceLabel(product: Product): string {
+  return `${product.startingAt ? "From " : ""}${formatMoney(product.price)}`;
+}
+
+export function relatedProducts(products: Product[], slug: string, count = 3): Product[] {
+  const current = findProduct(products, slug);
   return products
     .filter((p) => p.slug !== slug)
     .sort((a, b) => {
       const sameA = a.category === current?.category ? 0 : 1;
       const sameB = b.category === current?.category ? 0 : 1;
-      return sameA - sameB || a.popularity - b.popularity;
+      return sameA - sameB || a.sortOrder - b.sortOrder;
     })
     .slice(0, count);
-}
-
-export function getFinish(id: string): Finish | undefined {
-  return (finishes as Record<string, Finish>)[id];
-}
-
-export function productFinishes(product: Product): Finish[] {
-  return product.finishes.map((id) => finishes[id]);
-}
-
-/** Custom-printed products need artwork before they can be produced. */
-export function needsArtwork(product: Product): boolean {
-  return product.category === "custom" || product.category === "teams";
 }

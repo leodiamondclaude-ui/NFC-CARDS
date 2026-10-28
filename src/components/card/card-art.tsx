@@ -56,7 +56,7 @@ export function CardArt({
 
   const angled = view === "angled" || view === "edge";
   const isBack = view === "back";
-  const isMetal = finish.material.toLowerCase().includes("steel");
+  const isMetal = finish.id === "metallic";
 
   return (
     <div

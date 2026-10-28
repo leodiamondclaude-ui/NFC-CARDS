@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { useEffect, useLayoutEffect, useState } from "react";
 import { BagIcon, CloseIcon, MenuIcon } from "@/components/ui/icons";
 import { useCartCount } from "@/lib/cart-store";
@@ -16,7 +15,7 @@ export function CartButton() {
     >
       <BagIcon />
       {count > 0 && (
-        <span className="absolute right-0.5 top-0.5 grid h-[1.15rem] min-w-[1.15rem] place-items-center rounded-full bg-accent px-1 text-[0.68rem] font-semibold text-accent-ink tabular-nums">
+        <span key={count} className="animate-[pop_350ms_var(--ease-out-soft)] absolute right-0.5 top-0.5 grid h-[1.15rem] min-w-[1.15rem] place-items-center rounded-full bg-accent px-1 text-[0.68rem] font-semibold text-accent-ink tabular-nums">
           {count > 99 ? "99+" : count}
         </span>
       )}
@@ -26,15 +25,9 @@ export function CartButton() {
 
 export function MobileMenu({ links }: { links: { href: string; label: string }[] }) {
   const [open, setOpen] = useState(false);
-  const pathname = usePathname();
-  const [lastPath, setLastPath] = useState(pathname);
 
-  // Close when the route changes.
-  if (pathname !== lastPath) {
-    setLastPath(pathname);
-    setOpen(false);
-  }
-
+  // Links close the menu on click. This also closes it when the page is
+  // hidden by navigation (Activity keeps state otherwise).
   // Close when this route is hidden by navigation (Activity keeps state otherwise).
   useLayoutEffect(() => () => setOpen(false), []);
 
@@ -62,7 +55,7 @@ export function MobileMenu({ links }: { links: { href: string; label: string }[]
         {open ? <CloseIcon /> : <MenuIcon />}
       </button>
       {open && (
-        <div id="mobile-menu" className="fixed inset-x-0 bottom-0 top-16 z-40 bg-paper animate-rise">
+        <div id="mobile-menu" className="fixed inset-x-0 bottom-0 top-16 z-40 bg-paper animate-[rise_300ms_var(--ease-out-soft)_both]">
           <nav aria-label="Mobile" className="container-page flex flex-col pt-6">
             {links.map((l) => (
               <Link
@@ -74,8 +67,11 @@ export function MobileMenu({ links }: { links: { href: string; label: string }[]
                 {l.label}
               </Link>
             ))}
-            <Link href="/account" className="py-4 text-lg text-muted" onClick={() => setOpen(false)}>
-              Account
+            <Link href="/shop" className="mt-6 inline-flex h-12 items-center justify-center rounded-full bg-ink text-paper" onClick={() => setOpen(false)}>
+              Shop Cards
+            </Link>
+            <Link href="/orders" className="py-4 text-center text-sm text-muted" onClick={() => setOpen(false)}>
+              Track an order
             </Link>
           </nav>
         </div>

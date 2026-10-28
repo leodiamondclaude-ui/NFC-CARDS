@@ -3,11 +3,13 @@
 import Link from "next/link";
 import { useEffect } from "react";
 import { cart, useCart } from "@/lib/cart-store";
-import { getProduct } from "@/lib/catalog";
+import { findProduct } from "@/lib/catalog";
+import { useCatalog } from "@/components/providers/catalog-provider";
 import { CheckIcon, CloseIcon } from "@/components/ui/icons";
 
 export function AddedToast() {
   const { lastAdded, lines } = useCart();
+  const catalog = useCatalog();
   const line = lastAdded ? lines.find((l) => l.key === lastAdded.key) : undefined;
 
   useEffect(() => {
@@ -17,7 +19,7 @@ export function AddedToast() {
   }, [lastAdded]);
 
   if (!lastAdded || !line) return null;
-  const product = getProduct(line.slug);
+  const product = findProduct(catalog, line.slug);
 
   return (
     <div

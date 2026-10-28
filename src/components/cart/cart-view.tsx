@@ -8,7 +8,8 @@ import { BagIcon, MinusIcon, PlusIcon, TrashIcon } from "@/components/ui/icons";
 import { LineDetails, LineThumb, TotalsTable } from "@/components/cart/order-summary";
 import { cart, useCart, useCartReady } from "@/lib/cart-store";
 import { formatMoney } from "@/lib/money";
-import { computeTotals, deliveryEstimate } from "@/lib/pricing";
+import { computeTotals, deliveryEstimate, isCustomLine } from "@/lib/pricing";
+import { useCatalog } from "@/components/providers/catalog-provider";
 import { limits } from "@/config/site";
 
 export function CartView() {
@@ -16,8 +17,9 @@ export function CartView() {
   const { lines, discountCode } = useCart();
   const [method, setMethod] = useState<ShippingMethodId>("standard");
   const [code, setCode] = useState("");
-  const totals = useMemo(() => computeTotals(lines, { shippingMethod: method, discountCode }), [lines, method, discountCode]);
-  const hasCustom = totals.lines.some((l) => l.product.customizable && (l.customization?.text || l.customization?.uploadId));
+  const catalog = useCatalog();
+  const totals = useMemo(() => computeTotals(lines, catalog, { shippingMethod: method, discountCode }), [lines, catalog, method, discountCode]);
+  const hasCustom = totals.lines.some(isCustomLine);
 
   if (!ready) {
     return <div className="h-64 animate-pulse rounded-[var(--radius-card)] bg-card shadow-[0_0_0_1px_var(--line)]" aria-label="Loading cart" />;
@@ -30,11 +32,11 @@ export function CartView() {
           <BagIcon size={24} />
         </span>
         <h2 className="mt-6 text-xl font-semibold tracking-tight">Your cart is empty</h2>
-        <p className="mt-2 text-muted">Find a card you like, or design your own.</p>
+        <p className="mt-2 text-muted">Browse the collection to find the right card for you or your team.</p>
         <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-          <ButtonLink href="/shop">Shop cards</ButtonLink>
-          <ButtonLink href="/customize" variant="secondary">
-            Open the customizer
+          <ButtonLink href="/shop">Shop NFC cards</ButtonLink>
+          <ButtonLink href="/business" variant="secondary">
+            Ordering for a team?
           </ButtonLink>
         </div>
       </div>
@@ -48,7 +50,7 @@ export function CartView() {
     <div className="grid gap-10 lg:grid-cols-[1fr_24rem]">
       <div>
         {totals.issues.length > 0 && (
-          <div role="alert" className="mb-4 rounded-2xl bg-accent-soft p-4 text-sm text-accent-ink">
+          <div role="alert" className="mb-4 rounded-2xl bg-accent-soft p-4 text-sm text-ink">
             {totals.issues.map((i) => (
               <p key={i.key}>
                 {i.message}{" "}
@@ -107,13 +109,16 @@ export function CartView() {
             </li>
           ))}
         </ul>
+        <Link href="/shop" className="mt-5 inline-flex items-center gap-1.5 text-sm text-ink-2 underline-offset-4 hover:underline">
+          ← Continue shopping
+        </Link>
       </div>
 
       <aside aria-label="Order summary" className="h-fit space-y-6 rounded-[var(--radius-card)] bg-card p-6 shadow-[0_0_0_1px_var(--line)] lg:sticky lg:top-24">
         <h2 className="text-lg font-semibold tracking-tight">Summary</h2>
 
         <fieldset>
-          <legend className="mb-2 text-sm font-medium">Shipping</legend>
+          <legend className="mb-2 text-sm font-medium">Estimated shipping</legend>
           <div className="space-y-2">
             {shipping.methods.map((m) => {
               const free = m.freeOver !== undefined && totals.subtotal - totals.discount >= m.freeOver;
@@ -167,7 +172,8 @@ export function CartView() {
           )}
         </div>
 
-        <TotalsTable totals={totals} />
+        <TotalsTable totals={totals} shippingLabel="Estimated shipping" />
+        <p className="-mt-3 text-xs text-muted">Final prices are confirmed securely at checkout.</p>
 
         <ButtonLink href={`/checkout?shipping=${method}`} size="lg" className="w-full" aria-disabled={!totals.lines.length}>
           Continue to checkout

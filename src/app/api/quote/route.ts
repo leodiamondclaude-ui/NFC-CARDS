@@ -1,28 +1,26 @@
-import { randomUUID } from "node:crypto";
 import { quoteSchema } from "@/lib/schemas";
-import { insert } from "@/lib/server/store";
 import { sendQuoteEmails } from "@/lib/server/email";
+import { saveInquiry } from "@/lib/server/inquiries";
+import { rateLimit, tooManyRequests } from "@/lib/server/rate-limit";
 
 export async function POST(request: Request) {
-  let body: unknown;
-  try {
-    body = await request.json();
-  } catch {
-    return Response.json({ error: "Invalid request." }, { status: 400 });
-  }
-  const parsed = quoteSchema.safeParse(body);
+  const limit = await rateLimit("quote", 5, 10 * 60_000);
+  if (!limit.ok) return tooManyRequests(limit.retryAfter);
+
+  const parsed = quoteSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
     return Response.json({ error: "Please check the form.", fields: parsed.error.flatten().fieldErrors }, { status: 400 });
   }
+  // Honeypot filled in: pretend success without storing anything.
+  if (parsed.data.website) return Response.json({ ok: true, emailed: false });
 
-  const inquiry = { id: randomUUID(), ...parsed.data, status: "new", created_at: new Date().toISOString() };
+  let inquiry;
   try {
-    await insert("bulk_inquiries", inquiry);
+    inquiry = await saveInquiry(parsed.data);
   } catch (error) {
     console.error("[quote] could not save inquiry", error);
     return Response.json({ error: "We couldn't save your request. Please email us instead." }, { status: 500 });
   }
-
-  const [customer] = await sendQuoteEmails(inquiry);
-  return Response.json({ ok: true, confirmationEmailSent: customer.ok });
+  const email = await sendQuoteEmails({ ...parsed.data, id: inquiry.id });
+  return Response.json({ ok: true, emailed: email.ok });
 }

@@ -3,16 +3,26 @@
 import { useSyncExternalStore } from "react";
 import { limits } from "@/config/site";
 import { cartLineSchema } from "@/lib/schemas";
-import { lineKey, type CartLine } from "@/lib/pricing";
+import { lineKey } from "@/lib/pricing";
+import type { CartLine } from "@/lib/types";
 
 /**
  * Client cart persisted to localStorage. It holds product references and
  * configuration only; prices are always looked up from the catalog.
  */
 
-const STORAGE_KEY = "tapform.cart.v1";
+const STORAGE_KEY = "tapcard.cart.v1";
 
 type State = { lines: CartLine[]; discountCode: string | null; lastAdded: { key: string; at: number } | null };
+
+/** Notified on cart changes, e.g. for analytics. */
+const addListeners = new Set<(line: CartLine) => void>();
+export function onCartAdd(fn: (line: CartLine) => void) {
+  addListeners.add(fn);
+  return () => {
+    addListeners.delete(fn);
+  };
+}
 
 const EMPTY: State = { lines: [], discountCode: null, lastAdded: null };
 
@@ -94,6 +104,7 @@ export const cart = {
         )
       : [...state.lines, { ...line, key }].slice(0, limits.maxLines);
     set({ lines, lastAdded: { key, at: Date.now() } });
+    for (const fn of addListeners) fn({ ...line, key });
   },
   setQuantity(key: string, quantity: number) {
     const q = Math.max(1, Math.min(limits.maxQuantityPerLine, Math.round(quantity)));
