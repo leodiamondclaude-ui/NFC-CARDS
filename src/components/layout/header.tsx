@@ -13,7 +13,7 @@ export const navLinks = [
 
 export function Header() {
   return (
-    <header className="sticky top-0 z-40 border-b border-line/80 bg-paper/80 backdrop-blur-xl backdrop-saturate-150">
+    <header style={{ viewTransitionName: "site-header" }} className="sticky top-0 z-40 border-b border-line/80 bg-paper/80 backdrop-blur-xl backdrop-saturate-150">
       <a
         href="#main"
         className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-3 focus:z-50 focus:rounded-full focus:bg-ink focus:px-4 focus:py-2 focus:text-paper"

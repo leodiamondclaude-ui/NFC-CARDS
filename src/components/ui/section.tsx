@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { Reveal } from "@/components/motion/reveal";
 
 export function SectionHeading({
   eyebrow,
@@ -16,13 +17,21 @@ export function SectionHeading({
   id?: string;
 }) {
   return (
-    <div className={`max-w-2xl ${align === "center" ? "mx-auto text-center" : ""}`}>
-      {eyebrow && <p className={`eyebrow ${inverse ? "!text-paper/50" : ""}`}>{eyebrow}</p>}
-      <h2 id={id} className={`display mt-3 text-[2.1rem] sm:text-[2.75rem] ${inverse ? "text-paper" : ""}`}>
+    <Reveal className={`max-w-2xl ${align === "center" ? "mx-auto text-center" : ""}`}>
+      {eyebrow && (
+        <p data-reveal-item className={`eyebrow ${inverse ? "!text-paper/50" : ""}`}>
+          {eyebrow}
+        </p>
+      )}
+      <h2 data-reveal-item id={id} className={`display mt-3 text-[2.1rem] sm:text-[2.75rem] ${inverse ? "text-paper" : ""}`}>
         {title}
       </h2>
-      {body && <p className={`mt-4 text-lg leading-relaxed ${inverse ? "text-paper/65" : "text-muted"}`}>{body}</p>}
-    </div>
+      {body && (
+        <p data-reveal-item className={`mt-4 text-lg leading-relaxed ${inverse ? "text-paper/65" : "text-muted"}`}>
+          {body}
+        </p>
+      )}
+    </Reveal>
   );
 }
 

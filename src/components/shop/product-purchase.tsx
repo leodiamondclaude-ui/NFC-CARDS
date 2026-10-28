@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import Image from "next/image";
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, ViewTransition, type ReactNode } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { limits } from "@/config/site";
 import { ProductVisual } from "@/components/card/product-visual";
@@ -124,6 +124,7 @@ export function ProductPurchase({ product, header }: { product: Product; header:
     <div className="grid gap-10 lg:grid-cols-[1.15fr_1fr] lg:gap-16">
       {/* Gallery */}
       <div className="lg:sticky lg:top-24 lg:self-start">
+        <ViewTransition name={`product-${product.slug}`} share="morph" default="none">
         <div className="overflow-hidden rounded-[1.25rem] border border-line bg-paper-2">
           {variant &&
             (photoIndex >= 0 ? (
@@ -141,6 +142,7 @@ export function ProductPurchase({ product, header }: { product: Product; header:
               </div>
             ))}
         </div>
+        </ViewTransition>
         {views.length > 1 && (
           <div role="tablist" aria-label="Product images" className="mt-3 grid grid-cols-4 gap-2">
             {views.map((v) => (

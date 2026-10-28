@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, ViewTransition } from "react";
 import { ProductVisual } from "@/components/card/product-visual";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { SwatchPicker } from "@/components/shop/swatch-picker";
@@ -26,6 +26,7 @@ export function ProductCard({ product, priority = false }: { product: Product; p
     <article className="group flex flex-col overflow-hidden rounded-[var(--radius-card)] border border-line bg-card transition-[border-color,box-shadow,transform] duration-300 hover:-translate-y-0.5 hover:border-line-strong hover:shadow-[0_24px_48px_-28px_rgba(11,11,15,0.25)] motion-reduce:hover:translate-y-0">
       <Link href={href} className="block bg-paper-2" tabIndex={-1} aria-hidden="true">
         {variant && (
+          <ViewTransition name={`product-${product.slug}`} share="morph" default="none">
           <ProductVisual
             product={product}
             variant={variant}
@@ -34,6 +35,7 @@ export function ProductCard({ product, priority = false }: { product: Product; p
             priority={priority}
             className="transition-transform duration-500 ease-[var(--ease-out-soft)] group-hover:scale-[1.03] motion-reduce:group-hover:scale-100"
           />
+          </ViewTransition>
         )}
       </Link>
 

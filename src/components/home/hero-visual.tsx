@@ -1,6 +1,7 @@
 import { finishes } from "@/config/products";
 import { CardArt } from "@/components/card/card-art";
 import { PhonePreview } from "@/components/card/phone-preview";
+import { Tilt } from "@/components/motion/tilt";
 
 export function HeroVisual() {
   return (
@@ -20,13 +21,15 @@ export function HeroVisual() {
         <span className="absolute inset-0 rounded-full border border-accent/30 animate-ripple [animation-delay:1600ms]" />
       </div>
       <div className="absolute bottom-[4%] left-[0%] w-[58%] animate-float [--r:-8deg]">
-        <CardArt
-          finish={finishes.black}
-          view="front"
-          text="Alex Rivera"
-          subtext="Founder, Rivera Studio"
-          className="animate-rise [animation-delay:300ms]"
-        />
+        <Tilt max={10} className="relative [border-radius:6.2%/9.8%]">
+          <CardArt
+            finish={finishes.black}
+            view="front"
+            text="Alex Rivera"
+            subtext="Founder, Rivera Studio"
+            className="animate-rise [animation-delay:300ms]"
+          />
+        </Tilt>
       </div>
     </div>
   );

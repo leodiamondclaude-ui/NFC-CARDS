@@ -21,6 +21,7 @@ export function Steps({ inverse = false }: { inverse?: boolean }) {
       {steps.map((s) => (
         <li
           key={s.n}
+          data-reveal-item
           className={`rounded-[var(--radius-card)] p-7 ${inverse ? "bg-night-2 shadow-[0_0_0_1px_rgba(255,255,255,0.07)]" : "bg-card shadow-[0_0_0_1px_var(--line)]"}`}
         >
           <span className="font-mono text-sm text-accent">{s.n}</span>

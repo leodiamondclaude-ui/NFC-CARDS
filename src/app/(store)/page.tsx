@@ -10,6 +10,7 @@ import { FaqList } from "@/components/home/faq-list";
 import { TapIllustration } from "@/components/home/tap-illustration";
 import { ProductCard } from "@/components/shop/product-card";
 import { CardArt } from "@/components/card/card-art";
+import { Reveal } from "@/components/motion/reveal";
 import {
   ArrowRightIcon,
   BadgeIcon,
@@ -88,11 +89,11 @@ export default async function HomePage() {
         <h2 id="benefits" className="sr-only">
           Benefits
         </h2>
-        <div className="container-page grid divide-line sm:grid-cols-2 lg:grid-cols-4 lg:divide-x">
+        <Reveal className="container-page grid divide-line sm:grid-cols-2 lg:grid-cols-4 lg:divide-x">
           {benefits.map(({ id, title, body }) => {
             const I = benefitIcons[id];
             return (
-              <div key={id} className="px-2 py-7 sm:py-10 lg:px-8 lg:first:pl-0 lg:last:pr-0">
+              <div key={id} data-reveal-item className="px-2 py-7 sm:py-10 lg:px-8 lg:first:pl-0 lg:last:pr-0">
                 <span className="grid h-10 w-10 place-items-center rounded-xl bg-paper text-accent shadow-[0_0_0_1px_var(--line)]">
                   <I size={20} />
                 </span>
@@ -101,7 +102,7 @@ export default async function HomePage() {
               </div>
             );
           })}
-        </div>
+        </Reveal>
       </section>
 
       {/* Featured products */}
@@ -117,11 +118,13 @@ export default async function HomePage() {
             Shop all cards <ArrowRightIcon size={16} />
           </Link>
         </div>
-        <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <Reveal className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4" stagger={90}>
           {featured.map((p) => (
-            <ProductCard key={p.slug} product={p} />
+            <div key={p.slug} data-reveal-item className="grid">
+              <ProductCard product={p} />
+            </div>
           ))}
-        </div>
+        </Reveal>
       </section>
 
       {/* How it works */}
@@ -137,9 +140,9 @@ export default async function HomePage() {
             />
             <TapIllustration className="max-w-[22rem]" />
           </div>
-          <div className="mt-12">
+          <Reveal className="mt-12">
             <Steps inverse />
-          </div>
+          </Reveal>
           <p className="mt-6 flex max-w-3xl gap-2.5 text-sm leading-relaxed text-paper/60">
             <InfoIcon size={18} className="mt-0.5 shrink-0" />
             NFC support varies by phone. Most recent iPhones and many Android phones can read NFC cards, but some models
@@ -154,11 +157,11 @@ export default async function HomePage() {
       {/* Use cases */}
       <section className="container-page py-24" aria-labelledby="use-cases">
         <SectionHeading id="use-cases" eyebrow="Who it's for" title="Made for People Who Make Connections." />
-        <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        <Reveal className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           {useCases.map((u) => {
             const I = useCaseIcons[u.id] ?? BriefcaseIcon;
             return (
-              <div key={u.id} className="flex flex-col rounded-[var(--radius-card)] border border-line bg-card p-6">
+              <div key={u.id} data-reveal-item className="flex flex-col rounded-[var(--radius-card)] border border-line bg-card p-6 transition-[transform,border-color] duration-300 hover:-translate-y-1 hover:border-line-strong">
                 <span className="grid h-10 w-10 place-items-center rounded-xl bg-accent-soft text-accent">
                   <I size={20} />
                 </span>
@@ -167,12 +170,12 @@ export default async function HomePage() {
               </div>
             );
           })}
-        </div>
+        </Reveal>
       </section>
 
       {/* Business */}
       <section className="container-page pb-24" aria-labelledby="business">
-        <div className="grid overflow-hidden rounded-[1.75rem] border border-line bg-paper-2 lg:grid-cols-2">
+        <Reveal className="grid overflow-hidden rounded-[1.75rem] border border-line bg-paper-2 lg:grid-cols-2">
           <div className="p-8 md:p-14">
             <p className="eyebrow flex items-center gap-2">
               <BuildingIcon size={14} /> For business
@@ -208,7 +211,7 @@ export default async function HomePage() {
               <CardArt finish={finishes.black} text="Priya Shah" subtext="Head of Sales" />
             </div>
           </div>
-        </div>
+        </Reveal>
       </section>
 
       {/* Testimonials: placeholders only, clearly labeled. */}
@@ -221,16 +224,16 @@ export default async function HomePage() {
             </p>
           )}
         </div>
-        <ul className="mt-10 grid gap-4 md:grid-cols-3">
+        <Reveal as="ul" className="mt-10 grid gap-4 md:grid-cols-3">
           {testimonials.items.map((t, i) => (
-            <li key={i} className={`flex flex-col rounded-[var(--radius-card)] border border-line bg-card p-7 ${testimonials.isSample ? "border-dashed" : ""}`}>
+            <li key={i} data-reveal-item className={`flex flex-col rounded-[var(--radius-card)] border border-line bg-card p-7 ${testimonials.isSample ? "border-dashed" : ""}`}>
               <QuoteIcon size={22} className="text-accent" />
               <p className={`mt-5 flex-1 leading-relaxed ${testimonials.isSample ? "text-muted italic" : "text-ink-2"}`}>{t.quote}</p>
               <p className="mt-6 text-sm font-medium">{t.name}</p>
               <p className="text-sm text-muted">{t.role}</p>
             </li>
           ))}
-        </ul>
+        </Reveal>
       </section>
 
       {/* FAQ */}
@@ -241,12 +244,14 @@ export default async function HomePage() {
             All questions <ArrowRightIcon size={16} />
           </Link>
         </div>
-        <FaqList items={faqs.slice(0, 6)} />
+        <Reveal>
+          <FaqList items={faqs.slice(0, 6)} />
+        </Reveal>
       </section>
 
       {/* Closing CTA */}
       <section className="container-page pb-24">
-        <div className="rounded-[1.75rem] bg-ink px-8 py-16 text-center text-paper md:py-20">
+        <Reveal className="rounded-[1.75rem] bg-ink px-8 py-16 text-center text-paper md:py-20">
           <h2 className="display mx-auto max-w-2xl text-[2.3rem] sm:text-[3.2rem]">Make every introduction count.</h2>
           <p className="mx-auto mt-4 max-w-lg text-paper/65">Choose your card, set up your profile, and start sharing with a tap.</p>
           <div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row">
@@ -257,7 +262,7 @@ export default async function HomePage() {
               Request a Quote
             </ButtonLink>
           </div>
-        </div>
+        </Reveal>
       </section>
     </>
   );

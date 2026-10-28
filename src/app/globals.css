@@ -192,7 +192,139 @@ body {
   animation: ripple 2.4s ease-out infinite;
 }
 
+/* ---- Page transitions (React <ViewTransition>, see (store)/template.tsx) ---- */
+::view-transition {
+  pointer-events: none;
+}
+::view-transition-old(.page-exit) {
+  animation: 160ms ease-out both page-out;
+}
+::view-transition-new(.page-enter) {
+  animation: 420ms var(--ease-out-soft) 90ms both page-in;
+}
+@keyframes page-out {
+  to {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+    filter: blur(2px);
+  }
+}
+/* Decorative looping animations pause while a page transition runs; otherwise
+   Chromium can stall the page swap for its 4s timeout. */
+html:active-view-transition .animate-ripple,
+html:active-view-transition .animate-float {
+  animation-play-state: paused;
+}
+/* The header is an anchor: it never moves during a page change. */
+::view-transition-group(site-header) {
+  animation: none;
+  z-index: 100;
+}
+::view-transition-old(site-header) {
+  display: none;
+}
+::view-transition-new(site-header) {
+  animation: none;
+}
+/* Product image morphs from its card into the product page. */
+::view-transition-group(.morph) {
+  animation-duration: 480ms;
+  animation-timing-function: var(--ease-out-soft);
+}
+::view-transition-image-pair(.morph) {
+  animation-name: via-blur;
+}
+@keyframes via-blur {
+  35% {
+    filter: blur(2px);
+  }
+}
+
+/* Shop cards when filters or sorting change. */
+::view-transition-group(.card-move) {
+  animation-duration: 420ms;
+  animation-timing-function: var(--ease-out-soft);
+}
+::view-transition-new(.card-in) {
+  animation: 320ms var(--ease-out-soft) 80ms both card-in;
+}
+::view-transition-old(.card-out) {
+  animation: 160ms ease-out both card-out;
+}
+@keyframes card-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+@keyframes card-out {
+  to {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+
+/* ---- Scroll reveal (components/motion/reveal.tsx) ----
+   Only hidden when the inline script in the root layout has confirmed
+   JavaScript is running and the visitor hasn't asked for reduced motion. */
+html.motion [data-reveal]:not([data-shown]) [data-reveal-item],
+html.motion [data-reveal]:not([data-shown]):not(:has([data-reveal-item])) {
+  opacity: 0;
+  transform: translateY(22px);
+}
+html.motion [data-reveal] [data-reveal-item],
+html.motion [data-reveal]:not(:has([data-reveal-item])) {
+  transition:
+    opacity 700ms var(--ease-out-soft) var(--reveal-delay, 0ms),
+    transform 900ms var(--ease-out-soft) var(--reveal-delay, 0ms);
+}
+
+/* ---- Pointer tilt (components/motion/tilt.tsx) ---- */
+.tilt {
+  transform: perspective(900px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
+  transition: transform 600ms var(--ease-out-soft);
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+.tilt[data-tilting] {
+  transition-duration: 120ms;
+}
+.tilt::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 400ms ease;
+  background: radial-gradient(circle at var(--glare-x, 50%) var(--glare-y, 50%), rgba(255, 255, 255, 0.16), transparent 55%);
+}
+.tilt[data-tilting]::after {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(*),
+  ::view-transition-new(*),
+  ::view-transition-group(*) {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+  }
+  .tilt {
+    transform: none !important;
+  }
   *,
   *::before,
   *::after {

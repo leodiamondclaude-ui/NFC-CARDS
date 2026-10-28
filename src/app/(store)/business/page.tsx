@@ -5,6 +5,7 @@ import { PageHero, SectionHeading } from "@/components/ui/section";
 import { ButtonLink } from "@/components/ui/button";
 import { CardArt } from "@/components/card/card-art";
 import { QuoteForm } from "@/components/forms/quote-form";
+import { Reveal } from "@/components/motion/reveal";
 import { BadgeIcon, BuildingIcon, PackageIcon, RepeatIcon, SparkIcon, UsersIcon } from "@/components/ui/icons";
 
 export const metadata: Metadata = {
@@ -32,9 +33,9 @@ export default function BusinessPage() {
       />
 
       <section className="container-page py-20" aria-label="What we offer teams">
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <Reveal className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {features.map(({ icon: I, title, body }) => (
-            <div key={title} className="rounded-[var(--radius-card)] border border-line bg-card p-7">
+            <div key={title} data-reveal-item className="rounded-[var(--radius-card)] border border-line bg-card p-7">
               <span className="grid h-10 w-10 place-items-center rounded-xl bg-accent-soft text-accent">
                 <I size={20} />
               </span>
@@ -42,7 +43,7 @@ export default function BusinessPage() {
               <p className="mt-2 text-sm leading-relaxed text-muted">{body}</p>
             </div>
           ))}
-        </div>
+        </Reveal>
       </section>
 
       <section className="bg-night text-paper">

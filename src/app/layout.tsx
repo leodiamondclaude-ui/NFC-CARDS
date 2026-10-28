@@ -39,7 +39,15 @@ export const viewport: Viewport = {
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   const catalog = await getCatalog();
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
+    <html lang="en" suppressHydrationWarning className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
+      <head>
+        {/* Enables scroll-reveal styles only when JS runs and motion is welcome; content stays visible otherwise. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `if(!matchMedia("(prefers-reduced-motion: reduce)").matches)document.documentElement.classList.add("motion")`,
+          }}
+        />
+      </head>
       <body className="flex min-h-full flex-col">
         <CatalogProvider products={catalog}>{children}</CatalogProvider>
       </body>

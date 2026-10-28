@@ -4,6 +4,8 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 import { categories } from "@/config/products";
 import { ProductCard } from "@/components/shop/product-card";
+import { Reveal } from "@/components/motion/reveal";
+import { ViewTransition } from "react";
 import { CloseIcon, SearchIcon } from "@/components/ui/icons";
 import { filterProducts, sorts, type Sort } from "@/lib/filter";
 import type { Product } from "@/lib/types";
@@ -102,11 +104,16 @@ export function ShopBrowser({ products }: { products: Product[] }) {
       </div>
 
       {results.length ? (
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <Reveal className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" stagger={80}>
           {results.map((p, i) => (
-            <ProductCard key={p.id} product={p} priority={i < 2} />
+            // Cards slide into their new places when filters or sorting change.
+            <ViewTransition key={p.id} enter="card-in" exit="card-out" update="card-move" default="none">
+              <div data-reveal-item className="grid">
+                <ProductCard product={p} priority={i < 2} />
+              </div>
+            </ViewTransition>
           ))}
-        </div>
+        </Reveal>
       ) : (
         <div className="rounded-[var(--radius-card)] border border-line bg-paper-2 p-12 text-center">
           <p className="font-medium">No products match your search.</p>

@@ -57,11 +57,12 @@ export function MobileMenu({ links }: { links: { href: string; label: string }[]
       {open && (
         <div id="mobile-menu" className="fixed inset-x-0 bottom-0 top-16 z-40 bg-paper animate-[rise_300ms_var(--ease-out-soft)_both]">
           <nav aria-label="Mobile" className="container-page flex flex-col pt-6">
-            {links.map((l) => (
+            {links.map((l, i) => (
               <Link
                 key={l.href}
                 href={l.href}
-                className="border-b border-line py-4 text-2xl font-medium tracking-tight"
+                style={{ animationDelay: `${80 + i * 45}ms` }}
+                className="animate-rise border-b border-line py-4 text-2xl font-medium tracking-tight"
                 onClick={() => setOpen(false)}
               >
                 {l.label}
