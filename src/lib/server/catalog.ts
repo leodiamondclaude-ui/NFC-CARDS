@@ -2,6 +2,7 @@ import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
 import { starterProducts } from "@/config/products";
 import type { CustomField, FinishId, Product, Variant } from "@/lib/types";
+import { hasSupabase, isProduction } from "@/lib/server/env";
 import { insertMany, list, remove, update, insert, findBy, type Row } from "@/lib/server/store";
 
 /**
@@ -93,6 +94,9 @@ async function ensureSeeded() {
 
 /** Reads the full catalog (including inactive products) straight from the store. */
 export async function readCatalog(): Promise<Product[]> {
+  // Deployed without a database (e.g. a first Vercel deploy): serve the starter
+  // catalog read-only instead of writing to the host's read-only filesystem.
+  if (isProduction() && !hasSupabase()) return starterProducts.map((p) => ({ ...p, updatedAt: new Date(0).toISOString() }));
   await ensureSeeded();
   const [products, variants, images] = await Promise.all([
     list<ProductRow>("products", { order: { column: "sort_order", ascending: true } }),
