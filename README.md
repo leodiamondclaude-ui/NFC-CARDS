@@ -135,6 +135,10 @@ Where other settings live:
 
 ## Deployment (Vercel)
 
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fleodiamondclaude-ui%2Fhandshake&project-name=handshake)
+
+**A first deploy works with no keys at all.** Without Supabase, a production deployment serves the starter catalog read-only: every page, the cart and the product customizer work, checkout says payments aren't set up yet, and the quote and contact forms say they couldn't save instead of pretending. Nothing is written to the host's disk. Add the keys below when you're ready to sell.
+
 1. Push the repository to GitHub and import it in Vercel.
 2. Set the environment variables from `.env.example`. At minimum:
    - `NEXT_PUBLIC_SITE_URL`
@@ -144,6 +148,8 @@ Where other settings live:
 3. Run the Supabase migration.
 4. Add the Stripe webhook endpoint described above.
 5. Deploy, then place a test-mode order end to end before switching to live keys.
+
+**Custom domain.** In Vercel, open the project → Settings → Domains, add your domain, and follow the DNS records it shows (an `A` record for the bare domain and a `CNAME` for `www`). If you buy the domain through Vercel, this is automatic. Then set `NEXT_PUBLIC_SITE_URL` to `https://yourdomain.com`, redeploy, and point the Stripe webhook at the same domain.
 
 **The rate limiter is in memory, per instance.** On serverless hosting, add a shared limiter (for example Upstash Redis) or your host's firewall rules for `/api/*` and the admin login.
 

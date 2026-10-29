@@ -1,7 +1,7 @@
 import "server-only";
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { env, hasSupabase } from "@/lib/server/env";
+import { env, hasSupabase, isProduction } from "@/lib/server/env";
 
 /**
  * Minimal persistence layer with two backends:
@@ -57,6 +57,8 @@ function withLock<T>(table: string, fn: () => Promise<T>): Promise<T> {
 }
 
 async function writeLocal(table: string, rows: Row[]) {
+  // Serverless hosts lose (or refuse) local files, so never pretend a write was saved.
+  if (isProduction()) throw new Error(`Storage is not configured: set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY to save ${table}`);
   const file = localPath(table);
   await mkdir(path.dirname(file), { recursive: true });
   const tmp = `${file}.${process.pid}.tmp`;
